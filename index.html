@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#14301F">
+<title>裏切り者の銭</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --felt:#14301F;
+  --felt-hi:#1D4530;
+  --card:#F6EFDD;
+  --card-dim:#EAE1C8;
+  --ink:#221F19;
+  --ink-soft:#5A5344;
+  --shu:#C6402E;
+  --shu-deep:#9E2F21;
+  --gold:#C9A227;
+  --gold-hi:#E7C55A;
+  --line:#221F19;
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(120% 90% at 50% 0%, var(--felt-hi) 0%, var(--felt) 60%),
+    var(--felt);
+  min-height:100vh;
+  font-family:'Zen Kaku Gothic New',system-ui,sans-serif;
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+}
+#app{max-width:430px;margin:0 auto;padding:14px 14px calc(120px + var(--safe-b));}
+section{display:none;}
+section.on{display:block;animation:fadein .3s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- 共通パーツ ---------- */
+.disp{font-family:'Yuji Syuku',serif;font-weight:400;}
+.panel{
+  background:var(--card);
+  border:2px solid var(--line);
+  border-radius:10px;
+  box-shadow:4px 4px 0 rgba(0,0,0,.45);
+  padding:14px;
+  margin-bottom:14px;
+}
+.btn{
+  display:block;width:100%;
+  min-height:52px;
+  border:2px solid var(--line);
+  border-radius:10px;
+  background:var(--gold);
+  color:var(--ink);
+  font-family:'Zen Kaku Gothic New',sans-serif;
+  font-size:17px;font-weight:700;
+  box-shadow:3px 3px 0 rgba(0,0,0,.45);
+  cursor:pointer;
+}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.45);}
+.btn.shu{background:var(--shu);color:#fff;}
+.btn.plain{background:var(--card);}
+.btn:disabled{opacity:.4;pointer-events:none;}
+.tag{
+  display:inline-block;padding:2px 10px;border:1.5px solid var(--line);
+  border-radius:999px;font-size:12px;font-weight:700;background:#fff;
+}
+.tag.shu{background:var(--shu);color:#fff;border-color:var(--shu-deep);}
+.tag.gld{background:var(--gold);color:var(--ink);}
+h1,h2,h3{margin:0;}
+.small{font-size:12px;color:var(--ink-soft);line-height:1.7;}
+
+/* ---------- タイトル・設定 ---------- */
+#scr-title .logo{
+  text-align:center;color:var(--card);
+  margin:20px 0 16px;
+}
+#scr-title .logo .yomi{letter-spacing:.5em;font-size:12px;color:var(--gold-hi);margin-bottom:6px;}
+#scr-title .logo h1{font-size:48px;line-height:1.15;letter-spacing:.06em;text-shadow:3px 3px 0 rgba(0,0,0,.5);}
+#scr-title .logo h1 .u{color:var(--gold-hi);}
+.seg{display:flex;gap:8px;margin-bottom:14px;}
+.seg button{
+  flex:1;min-height:56px;border:2px solid var(--line);border-radius:10px;
+  background:var(--card-dim);font-weight:700;font-size:15px;color:var(--ink);
+  box-shadow:2px 2px 0 rgba(0,0,0,.4);line-height:1.35;
+}
+.seg button small{display:block;font-size:10.5px;font-weight:500;color:inherit;opacity:.75;}
+.seg button.sel{background:var(--shu);color:#fff;}
+.set-label{font-size:13px;font-weight:700;margin:10px 0 6px;display:flex;justify-content:space-between;align-items:baseline;}
+.set-label .small{font-weight:500;}
+.cnt-row{display:flex;gap:6px;}
+.cnt{
+  flex:1;min-height:46px;border:2px solid var(--line);border-radius:10px;
+  background:var(--card-dim);font-size:16px;font-weight:700;
+  box-shadow:2px 2px 0 rgba(0,0,0,.4);color:var(--ink);position:relative;
+}
+.cnt.sel{background:var(--shu);color:#fff;}
+.cnt .rec{
+  position:absolute;top:-9px;left:50%;transform:translateX(-50%);
+  font-size:9px;background:var(--gold);border:1px solid var(--line);
+  border-radius:999px;padding:0 6px;color:var(--ink);font-weight:700;white-space:nowrap;
+}
+.cnt:disabled{opacity:.3;}
+.rules-list{margin:0;padding-left:1.2em;font-size:13.5px;line-height:1.9;}
+.rules-list b{color:var(--shu-deep);}
+.name-in{
+  display:flex;align-items:center;gap:8px;margin-bottom:8px;
+}
+.name-in input{
+  flex:1;min-height:44px;border:2px solid var(--line);border-radius:8px;
+  background:#fff;font-size:16px;padding:0 10px;font-family:inherit;font-weight:700;
+}
+
+/* ---------- 受け渡し ---------- */
+#scr-pass{text-align:center;color:var(--card);}
+#scr-pass .passIcon{font-size:56px;margin:44px 0 6px;}
+#scr-pass .to{font-size:15px;color:var(--gold-hi);letter-spacing:.2em;}
+#scr-pass .who{font-size:44px;margin:8px 0 4px;text-shadow:3px 3px 0 rgba(0,0,0,.5);}
+#scr-pass .note{font-size:13px;opacity:.85;margin-bottom:36px;line-height:1.8;}
+#scr-pass .who .mon{width:44px;height:44px;font-size:26px;margin-right:10px;background:var(--gold);}
+
+/* ---------- 役札 ---------- */
+.flipwrap{perspective:900px;margin:20px auto;width:210px;height:300px;}
+.flip{
+  position:relative;width:100%;height:100%;
+  transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,1.2,.4,1);
+}
+.flip.open{transform:rotateY(180deg);}
+.face{
+  position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  border:3px solid var(--line);border-radius:12px;
+  box-shadow:5px 5px 0 rgba(0,0,0,.5);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+}
+.face.back{
+  background:repeating-linear-gradient(45deg,var(--shu-deep) 0 12px,var(--shu) 12px 24px);
+  color:#fff;
+}
+.face.back .disp{font-size:60px;text-shadow:2px 2px 0 rgba(0,0,0,.4);}
+.face.front{background:var(--card);transform:rotateY(180deg);text-align:center;padding:14px;}
+.face.front .role-k{font-size:52px;line-height:1.2;}
+.face.front .role-k.shu-t{color:var(--shu-deep);}
+.face.front .desc{font-size:12.5px;line-height:1.8;color:var(--ink-soft);}
+#roleHint{text-align:center;color:var(--card);font-size:13px;}
+#roleWho{text-align:center;color:var(--gold-hi);font-size:15px;font-weight:700;}
+
+/* ---------- 盤面 ---------- */
+.hud{
+  display:flex;align-items:baseline;justify-content:space-between;
+  color:var(--card);margin-bottom:10px;
+}
+.hud .r{font-size:26px;}
+.hud .r span{color:var(--gold-hi);}
+.hud .me{font-size:12.5px;text-align:right;}
+table.board{width:100%;border-collapse:collapse;font-size:14px;}
+table.board th{
+  font-size:11px;color:var(--ink-soft);font-weight:500;
+  border-bottom:1.5px solid var(--line);padding:2px 4px;text-align:center;
+}
+table.board td{padding:7px 4px;border-bottom:1px dashed #c9bfa4;text-align:center;}
+table.board tr:last-child td{border-bottom:none;}
+td.pname{text-align:left;font-weight:700;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis;}
+.mon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:50%;
+  border:1.5px solid var(--line);background:#fff;
+  font-family:'Yuji Syuku',serif;font-size:15px;margin-right:6px;vertical-align:middle;flex:none;
+}
+tr.meRow .mon{background:var(--gold);}
+td.tot{font-weight:700;font-size:16px;}
+.mylog{font-size:12px;color:var(--ink-soft);line-height:1.8;margin-top:8px;border-top:1.5px dashed var(--ink-soft);padding-top:8px;}
+
+/* ---------- アクション ---------- */
+.actbar-title{color:var(--card);font-size:15px;margin:4px 0 8px;}
+.mode-row{display:flex;gap:8px;margin-bottom:10px;}
+.mode{
+  flex:1;min-height:46px;border:2px solid var(--line);border-radius:10px;
+  background:var(--card-dim);font-weight:700;font-size:15px;color:var(--ink);
+  box-shadow:2px 2px 0 rgba(0,0,0,.4);
+}
+.mode.sel{background:var(--shu);color:#fff;}
+.amt-row{display:flex;gap:8px;margin-bottom:10px;}
+.amt{
+  flex:1;min-height:46px;border:2px solid var(--line);border-radius:10px;
+  background:var(--card-dim);font-weight:700;font-size:16px;color:var(--ink);
+  box-shadow:2px 2px 0 rgba(0,0,0,.4);
+}
+.amt.sel{background:var(--gold);}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.tgt{
+  min-height:48px;border:2px solid var(--line);border-radius:10px;
+  background:var(--card);font-weight:700;font-size:15px;color:var(--ink);
+  box-shadow:2px 2px 0 rgba(0,0,0,.4);
+  display:flex;align-items:center;justify-content:flex-start;gap:6px;padding:0 10px;
+  overflow:hidden;
+}
+.tgt.sel{background:var(--gold);}
+.tgt:disabled{opacity:.35;}
+.tgt .mon{margin-right:0;}
+.tgt span.nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#actHelp{color:#e9e2cd;font-size:12px;line-height:1.7;margin-top:8px;opacity:.85;}
+.fixedbtn{
+  position:fixed;left:0;right:0;bottom:0;
+  padding:10px 14px calc(12px + var(--safe-b));
+  background:linear-gradient(transparent, rgba(10,25,16,.92) 30%);
+  z-index:5;
+}
+.fixedbtn .inner{max-width:430px;margin:0 auto;}
+
+/* ---------- 巡結果 ---------- */
+.roundres h2{color:var(--card);font-size:26px;margin-bottom:12px;text-align:center;text-shadow:2px 2px 0 rgba(0,0,0,.5);}
+.res-row{display:flex;align-items:center;justify-content:space-between;padding:9px 4px;border-bottom:1px dashed #c9bfa4;}
+.res-row:last-child{border-bottom:none;}
+.res-row .pts{font-size:19px;font-weight:700;}
+.res-row .pts.zero{color:var(--ink-soft);font-weight:500;font-size:15px;}
+.res-row .pts.got{color:var(--shu-deep);}
+.circnote{text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:8px;}
+
+/* ---------- 結果 ---------- */
+.verdict{
+  text-align:center;color:var(--card);margin:8px 0 16px;
+}
+.verdict .disp{font-size:42px;text-shadow:3px 3px 0 rgba(0,0,0,.55);}
+.verdict .sub{font-size:14px;color:var(--gold-hi);margin-top:2px;line-height:1.7;}
+.mathline{display:flex;justify-content:space-between;font-size:15px;padding:5px 0;}
+.mathline b{font-size:17px;}
+.mathline.total{border-top:2px solid var(--line);margin-top:6px;padding-top:9px;font-weight:700;}
+.acc-line{font-size:14px;padding:5px 0;border-bottom:1px dashed #c9bfa4;}
+.acc-line:last-child{border-bottom:none;}
+.hit{color:var(--shu-deep);font-weight:700;}
+.miss{color:var(--ink-soft);}
+.endrow{display:flex;align-items:center;justify-content:space-between;padding:8px 4px;border-bottom:1px dashed #c9bfa4;font-size:14.5px;gap:6px;}
+.endrow:last-child{border-bottom:none;}
+.endrow .lft{display:flex;align-items:center;flex-wrap:wrap;gap:4px;min-width:0;}
+.endrow .sc{font-weight:700;font-size:17px;flex:none;}
+.loser-mark{font-size:11px;color:#fff;background:var(--ink);border-radius:999px;padding:2px 8px;}
+.win-mark{font-size:11px;color:var(--ink);background:var(--gold);border-radius:999px;padding:2px 8px;border:1px solid var(--line);}
+
+/* ルールモーダル */
+#modal{
+  position:fixed;inset:0;background:rgba(10,20,14,.75);z-index:20;
+  display:none;align-items:flex-end;justify-content:center;
+}
+#modal.on{display:flex;}
+#modal .sheet{
+  background:var(--card);border:2px solid var(--line);border-radius:14px 14px 0 0;
+  max-width:430px;width:100%;max-height:78vh;overflow-y:auto;
+  padding:18px 16px calc(18px + var(--safe-b));
+}
+.linkish{background:none;border:none;color:var(--gold-hi);font-size:13px;text-decoration:underline;font-family:inherit;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ========== タイトル・設定 ========== -->
+  <section id="scr-title" class="on">
+    <div class="logo">
+      <div class="yomi">うらぎりもの の ぜに</div>
+      <h1 class="disp">裏切り者<span class="u">の</span>銭</h1>
+    </div>
+    <div class="seg">
+      <button id="segAi">ひとりで<small>AIと勝負</small></button>
+      <button id="segLocal">みんなで<small>1台を回して対戦</small></button>
+    </div>
+    <div class="panel">
+      <div class="set-label"><span>卓の人数</span></div>
+      <div class="cnt-row" id="cntRow"></div>
+      <div class="set-label"><span>裏切り者の人数</span></div>
+      <div class="cnt-row" id="trRow"></div>
+      <div class="set-label"><span>裏切り陣営の倍率</span><span class="small">合計にかかる</span></div>
+      <div class="cnt-row" id="mlRow"></div>
+      <div class="small" style="margin-top:10px;">「推奨」はテスト対局で調整した組み合わせ。倍率を上げるほど裏切り者有利。</div>
+    </div>
+    <div class="panel">
+      <h3 style="font-size:15px;margin-bottom:8px;">遊び方</h3>
+      <ul class="rules-list">
+        <li><b>市民</b>は毎巡、誰かに1銭渡す。<b>他人に渡すと2銭になって届く</b>(自分は1銭のまま)。</li>
+        <li><b>裏切り者</b>は毎巡0〜3銭を渡せるが、<b>倍にならない</b>。</li>
+        <li>公開されるのは「各自が受け取った額」だけ。誰が渡したかは秘密。</li>
+        <li>最終巡、市民は<b>銭を渡す</b>か<b>告発</b>かを選ぶ。的中で相手<b>−3</b>、外すと自分<b>−1</b>。</li>
+        <li>裏切り陣営の合計×倍率 が 市民の合計を<b>上回れば</b>裏切り者の勝ち。同点は市民勝利。</li>
+        <li>裏切り者が勝つと、<b>最下位の市民も敗者</b>になる。</li>
+        <li><b>御法度</b>:自分の役・渡した相手と額・告発先を口にするのは禁止(嘘の申告も禁止)。「○○に合わせよう」といった<b>談合も禁止</b>。</li>
+      </ul>
+    </div>
+    <div class="fixedbtn"><div class="inner"><button class="btn shu" id="btnStart">卓に着く</button></div></div>
+  </section>
+
+  <!-- ========== 名前入力(対人) ========== -->
+  <section id="scr-names">
+    <div class="hud"><div class="r disp">面子の名</div></div>
+    <div class="panel">
+      <div class="small" style="margin-bottom:10px;">座る順に名前を入れる(そのままでもよい)。この順でスマホを回す。</div>
+      <div id="nameList"></div>
+    </div>
+    <div class="fixedbtn"><div class="inner"><button class="btn shu" id="btnNamesOk">役を配る</button></div></div>
+  </section>
+
+  <!-- ========== 受け渡し ========== -->
+  <section id="scr-pass">
+    <div class="passIcon">📱</div>
+    <div class="to">─ スマホを渡す ─</div>
+    <div class="who disp" id="passWho"></div>
+    <div class="note" id="passNote">他の面子は画面を見ないこと。</div>
+    <div class="fixedbtn"><div class="inner"><button class="btn" id="btnIAm"></button></div></div>
+  </section>
+
+  <!-- ========== 役札 ========== -->
+  <section id="scr-role">
+    <div class="hud"><div class="r disp">配 役</div></div>
+    <div id="roleWho"></div>
+    <div class="flipwrap"><div class="flip" id="flipCard">
+      <div class="face back"><div class="disp">役</div><div style="font-size:12px;letter-spacing:.3em;">FUDA</div></div>
+      <div class="face front" id="roleFront"></div>
+    </div></div>
+    <p id="roleHint">札に触れて役を確かめる(周りに見られないように)</p>
+    <div class="fixedbtn"><div class="inner"><button class="btn" id="btnRoleOk" disabled>心得た</button></div></div>
+  </section>
+
+  <!-- ========== プレイ ========== -->
+  <section id="scr-play">
+    <div class="hud">
+      <div class="r disp">第<span id="hudRound">1</span>巡<span style="font-size:14px;color:#cfe4d3;"> / 3</span></div>
+      <div class="me" id="hudMe"></div>
+    </div>
+    <div class="panel">
+      <table class="board" id="boardTbl"></table>
+      <div class="mylog" id="myLog"></div>
+    </div>
+
+    <div class="actbar-title" id="actTitle"></div>
+    <div class="mode-row" id="modeRow" style="display:none;">
+      <button class="mode sel" id="modeGive">銭を渡す</button>
+      <button class="mode" id="modeAccuse">告発する</button>
+    </div>
+    <div class="amt-row" id="amtRow" style="display:none;"></div>
+    <div class="tgrid" id="tgtGrid"></div>
+    <div id="actHelp"></div>
+    <div style="text-align:center;margin-top:10px;"><button class="linkish" id="btnRules">ルールを見る</button></div>
+    <div class="fixedbtn"><div class="inner"><button class="btn shu" id="btnCommit" disabled>これで決める</button></div></div>
+  </section>
+
+  <!-- ========== 巡結果 ========== -->
+  <section id="scr-round" class="roundres">
+    <h2 class="disp" id="rrTitle">第一巡 開帳</h2>
+    <div class="panel" id="rrList"></div>
+    <div class="circnote" style="color:#e9e2cd;" id="rrPublicNote"></div>
+    <div class="fixedbtn"><div class="inner"><button class="btn" id="btnNext">次へ</button></div></div>
+  </section>
+
+  <!-- ========== 最終結果 ========== -->
+  <section id="scr-end">
+    <div class="verdict">
+      <div class="disp" id="endTitle"></div>
+      <div class="sub" id="endSub"></div>
+    </div>
+    <div class="panel">
+      <h3 style="font-size:14px;margin-bottom:6px;">勘定</h3>
+      <div id="endMath"></div>
+    </div>
+    <div class="panel" id="endAccPanel">
+      <h3 style="font-size:14px;margin-bottom:6px;">告発の結果</h3>
+      <div id="endAcc"></div>
+    </div>
+    <div class="panel">
+      <h3 style="font-size:14px;margin-bottom:6px;">面子と持ち銭</h3>
+      <div id="endPlayers"></div>
+    </div>
+    <div class="fixedbtn"><div class="inner"><button class="btn shu" id="btnReplay">もう一勝負</button></div></div>
+  </section>
+</div>
+
+<!-- ルールモーダル -->
+<div id="modal"><div class="sheet">
+  <h3 class="disp" style="font-size:22px;margin-bottom:10px;">御定書(ルール)</h3>
+  <ul class="rules-list">
+    <li>全3巡。行動はすべて同時扱い・秘密。公開されるのは毎巡「各自が受け取った額」だけ。</li>
+    <li><b>市民</b>:毎巡、誰か1人に1銭(自分も可)。<b>他人に渡すと2銭に化けて届く。自分なら1銭。</b></li>
+    <li><b>裏切り者</b>:毎巡、誰か1人に0〜3銭(自分も可、0=渡さない)。<b>倍にならず、そのままの額で届く。</b></li>
+    <li>受取額の偶数・奇数が手がかり。市民の贈り物は必ず2銭(偶数)、自分向けは1銭。奇数のズレは裏切り者の痕跡…かもしれない。</li>
+    <li><b>最終巡(第3巡)</b>:市民は「銭を渡す」か「1人を告発」を選ぶ。裏切り者は通常どおり銭を配る。</li>
+    <li>告発が<b>的中</b>:その裏切り者は−3銭(倍率をかける前)。<b>外れ</b>:告発者が−1銭。告発は重複して命中する。</li>
+    <li><b>勝敗</b>:裏切り陣営の合計 × 倍率 が、市民全員の合計を<b>超えたら</b>裏切り者の勝ち。同点以下なら市民の勝ち。</li>
+    <li>裏切り者が勝った場合、<b>持ち銭最下位の市民</b>も敗者となる。</li>
+    <li><b>御法度・一</b>:自分の役、渡した相手・額、告発する(した)相手を口に出すのは禁止。<b>嘘の申告も禁止</b>。</li>
+    <li><b>御法度・二</b>:談合の禁止。「○○を告発しよう」「○○に銭を集めよう」など、行動を示し合わせる相談・指示・合図は一切禁止。</li>
+    <li>口にしてよいのは、公開された受取表への感想・推理まで。「桜、受け取りすぎでは?」はよい。「だから皆で桜を告発しよう」は御法度。</li>
+    <li>推奨構成:4〜5人 → 裏切り者1人・×3/6〜8人 → 裏切り者2人・×2(6人卓は裏切り者有利の辛口)。設定で自由に変更できる。</li>
+    <li><b>みんなでモード</b>:座る順にスマホを回す。第1巡は役札を見てそのまま手番。自分の番以外は画面を見ないこと。開帳(受取表)と決算は全員で見てよい。</li>
+  </ul>
+  <button class="btn" id="btnCloseModal" style="margin-top:12px;">閉じる</button>
+</div></div>
+
+<script>
+"use strict";
+/* ================= 基本データ ================= */
+const PLANTS=["松","梅","桜","藤","萩","柳","楓","菊"];
+const MULTS=[1.5,2,2.5,3,4];
+const $=id=>document.getElementById(id);
+const rnd=n=>Math.floor(Math.random()*n);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;};
+const fmt=x=>Number.isInteger(x)?String(x):x.toFixed(1);
+
+let G=null;
+let sel={mode:"ai",n:5,traitors:1,mult:3};
+let actSel={mode:"give",amt:null,tgt:null};   // 現在の手番の選択
+let actor=null;                                // 現在の手番プレイヤー
+
+function recommend(n){return n<=5?{traitors:1,mult:3}:{traitors:2,mult:2};}
+
+/* ================= 画面遷移 ================= */
+function show(id){
+  document.querySelectorAll("section").forEach(s=>s.classList.remove("on"));
+  $(id).classList.add("on");
+  window.scrollTo(0,0);
+}
+
+/* ================= 設定画面 ================= */
+function buildTitle(){
+  $("segAi").classList.toggle("sel",sel.mode==="ai");
+  $("segLocal").classList.toggle("sel",sel.mode==="local");
+  const rec=recommend(sel.n);
+
+  const cr=$("cntRow");cr.innerHTML="";
+  for(let n=4;n<=8;n++){
+    const b=document.createElement("button");
+    b.className="cnt"+(n===sel.n?" sel":"");
+    b.textContent=n;
+    b.onclick=()=>{sel.n=n;const r=recommend(n);sel.traitors=r.traitors;sel.mult=r.mult;buildTitle();};
+    cr.appendChild(b);
+  }
+  const tr=$("trRow");tr.innerHTML="";
+  [1,2,3].forEach(t=>{
+    const b=document.createElement("button");
+    b.className="cnt"+(t===sel.traitors?" sel":"");
+    b.textContent=t+"人";
+    if(t>sel.n-2)b.disabled=true;                 // 市民は最低2人残す
+    if(t===rec.traitors)b.innerHTML+='<span class="rec">推奨</span>';
+    b.onclick=()=>{sel.traitors=t;buildTitle();};
+    tr.appendChild(b);
+  });
+  const ml=$("mlRow");ml.innerHTML="";
+  MULTS.forEach(m=>{
+    const b=document.createElement("button");
+    b.className="cnt"+(m===sel.mult?" sel":"");
+    b.textContent="×"+fmt(m);
+    if(m===rec.mult)b.innerHTML+='<span class="rec">推奨</span>';
+    b.onclick=()=>{sel.mult=m;buildTitle();};
+    ml.appendChild(b);
+  });
+}
+$("segAi").onclick=()=>{sel.mode="ai";buildTitle();};
+$("segLocal").onclick=()=>{sel.mode="local";buildTitle();};
+$("btnStart").onclick=()=>{
+  if(sel.traitors>sel.n-2){const r=recommend(sel.n);sel.traitors=r.traitors;}
+  if(sel.mode==="local")buildNames();
+  else newGame(null);
+};
+
+/* ================= 名前入力(対人) ================= */
+function buildNames(){
+  const list=$("nameList");list.innerHTML="";
+  for(let i=0;i<sel.n;i++){
+    const row=document.createElement("div");
+    row.className="name-in";
+    row.innerHTML=`<span class="mon">${PLANTS[i]}</span>`;
+    const inp=document.createElement("input");
+    inp.maxLength=8;inp.placeholder=PLANTS[i];inp.id="nm"+i;
+    try{inp.value=localStorage.getItem("zeni_nm"+i)||"";}catch(e){inp.value="";}
+    row.appendChild(inp);
+    list.appendChild(row);
+  }
+  show("scr-names");
+}
+$("btnNamesOk").onclick=()=>{
+  const names=[];
+  for(let i=0;i<sel.n;i++){
+    const v=($("nm"+i).value||"").trim();
+    names.push(v||PLANTS[i]);
+    try{localStorage.setItem("zeni_nm"+i,v);}catch(e){}
+  }
+  newGame(names);
+};
+
+/* ================= ゲーム生成 ================= */
+function newGame(customNames){
+  const n=sel.n;
+  const cfg={traitors:Math.min(sel.traitors,n-2),mult:sel.mult};
+  const roles=Array(n).fill("citizen");
+  shuffle([...Array(n).keys()]).slice(0,cfg.traitors).forEach(i=>roles[i]="traitor");
+  const humanIdx=sel.mode==="ai"?rnd(n):-1;
+  const aiNames=shuffle([...PLANTS]).slice(0,n);
+  G={
+    mode:sel.mode, n, cfg, round:1, humanIdx,
+    players:[], accusations:[], actLog:[[],[],[]],
+    ptr:0, pendGives:[], pendAccs:[],
+  };
+  for(let i=0;i<n;i++){
+    G.players.push({
+      id:i,
+      name:customNames?customNames[i]:aiNames[i],
+      plant:customNames?PLANTS[i]:aiNames[i],
+      isHuman:sel.mode==="local"?true:(i===humanIdx),
+      role:roles[i],
+      score:0, recv:[0,0,0],
+      sus:{},
+      brave:(1.7+Math.random()*1.5)-(cfg.traitors-1)*0.7,
+      style:Math.random()<0.4?"greedy":"stealth",
+      trustCut:0.8+Math.random()*0.8,
+      lastGive:null,
+    });
+  }
+  if(G.mode==="ai"){
+    actor=G.players[humanIdx];
+    buildRoleCard(actor,false);
+    show("scr-role");
+  }else{
+    G.ptr=0;G.pendGives=[];G.pendAccs=[];
+    showPass();
+  }
+}
+
+function dispName(p){return (G.mode==="ai"&&p.isHuman)?"あなた":p.name;}
+function traitorsOf(){return G.players.filter(p=>p.role==="traitor");}
+function citizensOf(){return G.players.filter(p=>p.role==="citizen");}
+
+/* ================= 受け渡し画面(対人) ================= */
+function showPass(){
+  const p=G.players[G.ptr];
+  $("passWho").innerHTML=`<span class="mon">${p.plant}</span>${p.name}`;
+  if(G.round===1){
+    $("passNote").textContent="第1巡:役札を確かめて、そのまま手番を打つ。他の面子は画面を見ないこと。";
+    $("btnIAm").textContent=`${p.name}だ。役を見る`;
+    $("btnIAm").onclick=()=>{buildRoleCard(p,true);show("scr-role");};
+  }else{
+    $("passNote").textContent=`第${G.round}巡の手番。他の面子は画面を見ないこと。`;
+    $("btnIAm").textContent=`${p.name}だ。手番を打つ`;
+    $("btnIAm").onclick=()=>{startTurnUI(p);};
+  }
+  show("scr-pass");
+}
+
+/* ================= 役札 ================= */
+function buildRoleCard(p,isLocal){
+  $("roleWho").innerHTML=isLocal?`<span class="mon">${p.plant}</span>${p.name} の役札`:"";
+  const front=$("roleFront");
+  let allyLine="";
+  if(p.role==="traitor"&&G.cfg.traitors>1){
+    const allies=traitorsOf().filter(t=>t.id!==p.id).map(t=>t.name).join("・");
+    allyLine=`<div class="tag shu" style="margin-top:4px;">相方:${allies}</div>`;
+  }
+  if(p.role==="citizen"){
+    front.innerHTML=`<div class="small">${isLocal?p.name+"の役":"あなたの役"}</div>
+      <div class="role-k disp">市民</div>
+      <div class="desc">毎巡1銭。他人に渡せば2銭に化ける。<br>受取額の流れから裏切り者を炙り出せ。<br>最終巡には告発もできる。</div>`;
+  }else{
+    front.innerHTML=`<div class="small">${isLocal?p.name+"の役":"あなたの役"}</div>
+      <div class="role-k disp shu-t">裏切り者</div>${allyLine}
+      <div class="desc">毎巡0〜3銭、倍にならない。<br>2銭は市民の贈り物に化ける隠れ蓑。<br>陣営合計×${fmt(G.cfg.mult)}が市民の合計を超えれば勝ち。</div>`;
+  }
+  const flip=$("flipCard");
+  flip.classList.remove("open");
+  $("btnRoleOk").disabled=true;
+  $("btnRoleOk").textContent=isLocal?"役を伏せて手番へ":"心得た";
+  $("roleHint").textContent="札に触れて役を確かめる(周りに見られないように)";
+  flip.onclick=()=>{flip.classList.add("open");$("btnRoleOk").disabled=false;
+    $("roleHint").textContent="覚えたら伏せて、そのまま手番へ";};
+  $("btnRoleOk").onclick=()=>{startTurnUI(p);};
+}
+
+/* ================= 盤面描画 ================= */
+function drawBoard(){
+  const done=G.round-1;
+  const t=$("boardTbl");
+  let h=`<tr><th style="text-align:left;">面子</th><th>一巡</th><th>二巡</th><th>三巡</th><th>持ち銭</th></tr>`;
+  G.players.forEach(p=>{
+    const cells=[0,1,2].map(r=>{
+      if(r>=done)return "<td>–</td>";
+      const v=p.recv[r];
+      return `<td>${v>0?"+"+v:"0"}</td>`;
+    }).join("");
+    h+=`<tr class="${p.id===actor.id?"meRow":""}">
+      <td class="pname"><span class="mon">${p.plant}</span>${dispName(p)}</td>
+      ${cells}<td class="tot">${p.score}</td></tr>`;
+  });
+  t.innerHTML=h;
+}
+
+function drawMyLog(p){
+  const lines=[];
+  for(let r=0;r<G.round-1;r++){
+    const a=G.actLog[r][p.id];
+    if(!a||a.type==="pass")lines.push(`第${r+1}巡:渡さなかった`);
+    else if(a.type==="give"){
+      const tgt=a.to===p.id?"自分":dispName(G.players[a.to]);
+      lines.push(`第${r+1}巡:${tgt} に <b>${a.pts}銭</b> 届いた`);
+    }
+  }
+  const who=G.mode==="ai"?"あなた":p.name;
+  $("myLog").innerHTML=lines.length
+    ?`<b>${who}の帳面(非公開)</b><br>`+lines.join("<br>")
+    :`${who}の行動はここに記録される(本人にだけ見える)。`;
+}
+
+/* ================= 手番UI ================= */
+function startTurnUI(p){
+  actor=p;
+  actSel={mode:"give",amt:null,tgt:null};
+  const isFinal=G.round===3;
+  $("hudRound").textContent=G.round;
+  $("hudMe").innerHTML=`${G.mode==="local"?`<b>${p.name}</b> `:""}`+
+    (p.role==="citizen"?`<span class="tag gld">市民</span>`:`<span class="tag shu">裏切り者</span>`);
+  drawBoard();drawMyLog(p);
+
+  $("modeRow").style.display=(isFinal&&p.role==="citizen")?"flex":"none";
+  setMode("give");
+
+  if(p.role==="traitor"){
+    const row=$("amtRow");row.style.display="flex";row.innerHTML="";
+    [0,1,2,3].forEach(a=>{
+      const b=document.createElement("button");
+      b.className="amt";b.textContent=a===0?"渡さない":a+"銭";
+      b.onclick=()=>{actSel.amt=a;refreshAct();};
+      b.dataset.a=a;
+      row.appendChild(b);
+    });
+  }else{
+    $("amtRow").style.display="none";
+    actSel.amt=1;
+  }
+  buildTargets();
+  refreshAct();
+  show("scr-play");
+}
+
+function setMode(m){
+  actSel.mode=m;actSel.tgt=null;
+  $("modeGive").classList.toggle("sel",m==="give");
+  $("modeAccuse").classList.toggle("sel",m==="accuse");
+  buildTargets();refreshAct();
+}
+$("modeGive").onclick=()=>setMode("give");
+$("modeAccuse").onclick=()=>setMode("accuse");
+
+function buildTargets(){
+  const grid=$("tgtGrid");grid.innerHTML="";
+  G.players.forEach(p=>{
+    const b=document.createElement("button");
+    b.className="tgt";
+    b.innerHTML=`<span class="mon">${p.plant}</span><span class="nm">${p.id===actor.id?(G.mode==="ai"?"あなた":p.name+"(自分)"):dispName(p)}</span>`;
+    if(actSel.mode==="accuse"&&p.id===actor.id)b.disabled=true;
+    b.onclick=()=>{actSel.tgt=p.id;refreshAct();};
+    b.dataset.pid=p.id;
+    grid.appendChild(b);
+  });
+}
+
+function refreshAct(){
+  const p=actor;
+  const isFinal=G.round===3;
+  document.querySelectorAll(".amt").forEach(b=>b.classList.toggle("sel",Number(b.dataset.a)===actSel.amt));
+  document.querySelectorAll(".tgt").forEach(b=>b.classList.toggle("sel",Number(b.dataset.pid)===actSel.tgt));
+
+  let title,help,ready=false;
+  if(actSel.mode==="accuse"){
+    title="告発する相手を選ぶ";
+    help="的中なら相手は−3銭(倍率前)。外せば自分が−1銭。告発した巡は銭を渡せない。";
+    ready=actSel.tgt!==null;
+  }else if(p.role==="citizen"){
+    title="1銭を渡す相手を選ぶ";
+    help="他人に渡すと<b>2銭</b>に化けて届く。自分に渡すと1銭のまま。渡した相手は公開されない。";
+    ready=actSel.tgt!==null;
+  }else{
+    title="渡す額と相手を選ぶ";
+    help="裏切り者の銭は倍にならない。<b>2銭は市民の贈り物と見分けがつかない</b>。奇数はノイズにも罠にもなる。";
+    if(G.cfg.traitors>1){
+      const allies=traitorsOf().filter(t=>t.id!==p.id).map(t=>dispName(t)).join("・");
+      help+=`<br>相方:<b>${allies}</b>`;
+    }
+    ready=actSel.amt===0||(actSel.amt!==null&&actSel.tgt!==null);
+    document.querySelectorAll(".tgt").forEach(b=>{
+      if(actSel.amt===0)b.disabled=true;
+      else b.disabled=false;
+    });
+  }
+  $("actTitle").innerHTML=(isFinal?"【最終巡】 ":"")+title;
+  $("actHelp").innerHTML=help;
+  $("btnCommit").disabled=!ready;
+}
+
+$("btnCommit").onclick=()=>{
+  const p=actor;
+  let give=null,acc=null,log=null;
+  if(actSel.mode==="accuse"){
+    acc={from:p.id,to:actSel.tgt};
+    log={type:"accuse",to:actSel.tgt};
+  }else if(p.role==="citizen"){
+    const pts=actSel.tgt===p.id?1:2;
+    give={from:p.id,to:actSel.tgt,pts};
+    log={type:"give",to:actSel.tgt,pts};
+  }else if(actSel.amt>0){
+    give={from:p.id,to:actSel.tgt,pts:actSel.amt};
+    log={type:"give",to:actSel.tgt,pts:actSel.amt};
+  }else{
+    log={type:"pass"};
+  }
+  G.actLog[G.round-1][p.id]=log;
+  p.lastGive=give;
+
+  if(G.mode==="ai"){
+    resolveAiRound(give,acc);
+  }else{
+    if(give)G.pendGives.push(give);
+    if(acc)G.pendAccs.push(acc);
+    G.ptr++;
+    if(G.ptr<G.n)showPass();
+    else resolveWith(G.pendGives,G.pendAccs);
+  }
+};
+
+/* ================= AI ================= */
+const CUMW=0.35;
+function evalSus(ai,q){return (ai.sus[q.id]||0)+CUMW*q.score;}
+function aiCitizenGive(ai){
+  const others=G.players.filter(q=>q.id!==ai.id)
+    .map(q=>({q,v:evalSus(ai,q)})).sort((a,b)=>a.v-b.v);
+  const trusted=others.filter(o=>o.v<ai.trustCut);
+  if(trusted.length===0||Math.random()<0.08)return{from:ai.id,to:ai.id,pts:1};
+  const pick=trusted[rnd(Math.min(trusted.length,2))].q;
+  return{from:ai.id,to:pick.id,pts:2};
+}
+function aiCitizenFinal(ai){
+  let top=null,val=-1;
+  G.players.forEach(p=>{if(p.id!==ai.id){const v=evalSus(ai,p);if(v>val){val=v;top=p.id;}}});
+  if(val>=ai.brave&&Math.random()<0.85)return{accuse:top};
+  return aiCitizenGive(ai);
+}
+function aiTraitorGive(ai){
+  const allies=traitorsOf().filter(t=>t.id!==ai.id);
+  const ally=allies.length?allies[rnd(allies.length)]:null;
+  const r=Math.random();
+  if(G.round<3&&r<0.12){
+    const cs=citizensOf();
+    if(cs.length)return{from:ai.id,to:cs[rnd(cs.length)].id,pts:1};
+  }
+  if(ai.style==="greedy"){
+    const amt=Math.random()<0.65?3:2;
+    const to=(ally&&Math.random()<0.3)?ally.id:ai.id;
+    return{from:ai.id,to,pts:amt};
+  }
+  if(G.round<3&&Math.random()<0.13)return null;
+  const to=(ally&&Math.random()<0.35)?ally.id:ai.id;
+  return{from:ai.id,to,pts:2};
+}
+function aiUpdateSuspicion(ai,recvArr){
+  const mine=ai.lastGive;
+  G.players.forEach(p=>{
+    if(p.id===ai.id)return;
+    const myC=(mine&&mine.to===p.id)?mine.pts:0;
+    const res=recvArr[p.id]-myC;
+    let s=0;
+    if(res>0){
+      if(res%2===1)s+=1.2+(res>=3?1.4:0);
+      if(res>=3)s+=(res-2)*0.7;
+      if(res===2)s+=0.1;
+    }else if(res===0){s-=0.25;}
+    s+=(Math.random()-0.5)*0.6;
+    ai.sus[p.id]=(ai.sus[p.id]||0)+s;
+  });
+}
+
+/* ================= 巡の解決 ================= */
+function resolveAiRound(humanGive,humanAcc){
+  const gives=[],accs=[];
+  if(humanGive)gives.push(humanGive);
+  if(humanAcc)accs.push(humanAcc);
+  const isFinal=G.round===3;
+  G.players.forEach(p=>{
+    if(p.isHuman)return;
+    let give=null,acc=null;
+    if(p.role==="citizen"){
+      if(isFinal){
+        const act=aiCitizenFinal(p);
+        if(act.accuse!==undefined)acc={from:p.id,to:act.accuse};
+        else give=act;
+      }else give=aiCitizenGive(p);
+    }else give=aiTraitorGive(p);
+    if(give){gives.push(give);G.actLog[G.round-1][p.id]={type:"give",to:give.to,pts:give.pts};}
+    else if(acc){accs.push(acc);G.actLog[G.round-1][p.id]={type:"accuse",to:acc.to};}
+    else G.actLog[G.round-1][p.id]={type:"pass"};
+    p.lastGive=give;
+  });
+  resolveWith(gives,accs);
+}
+
+function resolveWith(gives,accs){
+  const recv=Array(G.n).fill(0);
+  gives.forEach(g=>recv[g.to]+=g.pts);
+  G.players.forEach(p=>{p.recv[G.round-1]=recv[p.id];p.score+=recv[p.id];});
+  if(G.round===3)G.accusations=accs;
+  if(G.mode==="ai")G.players.forEach(p=>{if(!p.isHuman&&p.role==="citizen")aiUpdateSuspicion(p,recv);});
+  showRoundResult(recv);
+}
+
+function showRoundResult(recv){
+  const kan=["一","二","三"];
+  $("rrTitle").textContent=`第${kan[G.round-1]}巡 開帳`;
+  let h="";
+  G.players.forEach(p=>{
+    const v=recv[p.id];
+    h+=`<div class="res-row">
+      <div><span class="mon">${p.plant}</span><b>${dispName(p)}</b></div>
+      <div class="pts ${v>0?"got":"zero"}">${v>0?"+"+v+"銭":"受取なし"}</div></div>`;
+  });
+  const total=recv.reduce((a,b)=>a+b,0);
+  h+=`<div class="circnote">この巡に出回った銭:${total}銭(誰が渡したかは秘密)</div>`;
+  $("rrList").innerHTML=h;
+  $("rrPublicNote").textContent=G.mode==="local"?"この画面は全員で見てよい。感想・推理は自由、談合は御法度。":"";
+  $("btnNext").textContent=G.round===3?"勘定へ":"次の巡へ";
+  show("scr-round");
+}
+$("btnNext").onclick=()=>{
+  if(G.round===3){finishGame();return;}
+  G.round++;
+  if(G.mode==="ai")startTurnUI(G.players[G.humanIdx]);
+  else{G.ptr=0;G.pendGives=[];G.pendAccs=[];showPass();}
+};
+
+/* ================= 決算 ================= */
+function finishGame(){
+  const accResults=[];
+  G.accusations.forEach(a=>{
+    const from=G.players[a.from],to=G.players[a.to];
+    if(to.role==="traitor"){to.score-=3;accResults.push({a,hit:true});}
+    else{from.score-=1;accResults.push({a,hit:false});}
+  });
+
+  const cits=citizensOf(),trs=traitorsOf();
+  const citTotal=cits.reduce((s,p)=>s+p.score,0);
+  const trSum=trs.reduce((s,p)=>s+p.score,0);
+  const trFinal=trSum*G.cfg.mult;
+  const traitorWin=trFinal>citTotal;
+
+  let lowIds=[];
+  if(traitorWin){
+    const min=Math.min(...cits.map(p=>p.score));
+    lowIds=cits.filter(p=>p.score===min).map(p=>p.id);
+  }
+
+  let title,sub;
+  if(G.mode==="ai"){
+    const me=G.players[G.humanIdx];
+    if(traitorWin){
+      title=me.role==="traitor"?"裏切り 成就":"卓は 欺かれた";
+      sub=me.role==="traitor"?"あなたの銭が市民を上回った"
+        :(lowIds.includes(me.id)?"あなたは最下位の市民…敗者となった":"裏切り者の勝ち。最下位の市民も敗者に");
+    }else{
+      title=me.role==="citizen"?"市民の 勝ち":"企み 露見";
+      sub=me.role==="citizen"?"卓は守られた":"あなたの銭は市民に届かなかった";
+    }
+  }else{
+    if(traitorWin){
+      title="裏切り 成就";
+      const trNames=trs.map(t=>t.name).join("・");
+      const lowNames=lowIds.map(i=>G.players[i].name).join("・");
+      sub=`${trNames}の勝ち。最下位の市民 ${lowNames} も敗者。`;
+    }else{
+      title="市民の 勝ち";
+      sub="卓は守られた。裏切り者の敗け。";
+    }
+  }
+  $("endTitle").textContent=title;
+  $("endSub").textContent=sub;
+
+  $("endMath").innerHTML=`
+    <div class="mathline"><span>市民の合計</span><b>${citTotal}銭</b></div>
+    <div class="mathline"><span>裏切り陣営の合計</span><b>${trSum}銭</b></div>
+    <div class="mathline"><span>倍率</span><b>×${fmt(G.cfg.mult)}</b></div>
+    <div class="mathline total"><span>裏切り陣営 ${fmt(trFinal)}銭 ${traitorWin?">":"≤"} 市民 ${citTotal}銭</span><b>${traitorWin?"裏切り者の勝ち":"市民の勝ち"}</b></div>`;
+
+  if(accResults.length){
+    $("endAcc").innerHTML=accResults.map(r=>{
+      const f=G.players[r.a.from],t=G.players[r.a.to];
+      return `<div class="acc-line">${dispName(f)} → ${dispName(t)}:
+        ${r.hit?'<span class="hit">的中!(−3銭)</span>':'<span class="miss">はずれ(告発者−1銭)</span>'}</div>`;
+    }).join("");
+  }else{
+    $("endAcc").innerHTML=`<div class="acc-line miss">告発は行われなかった…</div>`;
+  }
+
+  $("endPlayers").innerHTML=G.players.map(p=>{
+    const roleTag=p.role==="traitor"?'<span class="tag shu">裏切り者</span>':'<span class="tag gld">市民</span>';
+    let mark="";
+    if(traitorWin&&p.role==="traitor")mark='<span class="win-mark">勝者</span>';
+    if(!traitorWin&&p.role==="citizen")mark='<span class="win-mark">勝者</span>';
+    if(traitorWin&&lowIds.includes(p.id))mark+='<span class="loser-mark">最下位敗者</span>';
+    if(!traitorWin&&p.role==="traitor")mark='<span class="loser-mark">敗者</span>';
+    return `<div class="endrow">
+      <div class="lft"><span class="mon">${p.plant}</span><b>${dispName(p)}</b> ${roleTag}${mark}</div>
+      <div class="sc">${p.score}銭</div></div>`;
+  }).join("");
+
+  show("scr-end");
+}
+$("btnReplay").onclick=()=>{buildTitle();show("scr-title");};
+
+/* ================= モーダル ================= */
+$("btnRules").onclick=()=>$("modal").classList.add("on");
+$("btnCloseModal").onclick=()=>$("modal").classList.remove("on");
+$("modal").onclick=e=>{if(e.target.id==="modal")$("modal").classList.remove("on");};
+
+buildTitle();
+</script>
+</body>
+</html>
