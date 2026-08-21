@@ -283,7 +283,7 @@ td.tot{font-weight:700;font-size:16px;}
         <li><b>市民</b>は毎巡、誰かに1銭渡す。<b>他人に渡すと2銭になって届く</b>(自分は1銭のまま)。</li>
         <li><b>裏切り者</b>は毎巡0〜3銭を渡せるが、<b>倍にならない</b>。裏切り者が複数の卓では互いに誰かは知らされず、<b>他の裏切り者に渡した銭は消える</b>。</li>
         <li>公開されるのは「各自が受け取った額」だけ。誰が渡したかは秘密。</li>
-        <li>最終巡、市民は<b>銭を渡す</b>か<b>告発</b>かを選ぶ。的中で相手<b>−3</b>、外すと自分<b>−1</b>。</li>
+        <li>3巡の後は<b>告発の刻</b>:全員が持ち銭表を見ながら、誰かを告発するか見送るかを秘密裏に選ぶ。的中で相手<b>−3</b>、外すと自分<b>−2</b>。</li>
         <li>裏切り陣営の合計×倍率 が 市民の合計を<b>上回れば</b>裏切り者の勝ち。同点は市民勝利。</li>
         <li>裏切り者が勝つと、<b>最下位の市民も敗者</b>になる。</li>
         <li><b>御法度</b>:自分の役・渡した相手と額・告発先を口にするのは禁止(嘘の申告も禁止)。「○○に合わせよう」といった<b>談合も禁止</b>。</li>
@@ -326,7 +326,7 @@ td.tot{font-weight:700;font-size:16px;}
   <!-- ========== プレイ ========== -->
   <section id="scr-play">
     <div class="hud">
-      <div class="r disp">第<span id="hudRound">1</span>巡<span style="font-size:14px;color:#cfe4d3;"> / 3</span></div>
+      <div class="r disp" id="hudPhase">第1巡</div>
       <div class="me" id="hudMe"></div>
     </div>
     <div class="panel">
@@ -335,10 +335,6 @@ td.tot{font-weight:700;font-size:16px;}
     </div>
 
     <div class="actbar-title" id="actTitle"></div>
-    <div class="mode-row" id="modeRow" style="display:none;">
-      <button class="mode sel" id="modeGive">銭を渡す</button>
-      <button class="mode" id="modeAccuse">告発する</button>
-    </div>
     <div class="amt-row" id="amtRow" style="display:none;"></div>
     <div class="tgrid" id="tgtGrid"></div>
     <div id="actHelp"></div>
@@ -385,15 +381,15 @@ td.tot{font-weight:700;font-size:16px;}
     <li><b>裏切り者</b>:毎巡、誰か1人に0〜3銭(自分も可、0=渡さない)。<b>倍にならず、そのままの額で届く。</b></li>
     <li>裏切り者が複数の卓では、<b>裏切り者同士も互いが誰か知らされない</b>。裏切り者が「別の裏切り者」に渡した銭は<b>消滅して届かない</b>(自分向けは有効)。消えたことは渡した本人にも通知されない — 受取表の数字から推理するしかない。</li>
     <li>受取額の偶数・奇数が手がかり。市民の贈り物は必ず2銭(偶数)、自分向けは1銭。奇数のズレは裏切り者の痕跡…かもしれない。</li>
-    <li><b>最終巡(第3巡)</b>:市民は「銭を渡す」か「1人を告発」を選ぶ。裏切り者は通常どおり銭を配る。</li>
-    <li>告発が<b>的中</b>:その裏切り者は−3銭(倍率をかける前)。<b>外れ</b>:告発者が−1銭。告発は重複して命中する。</li>
+    <li><b>告発の刻</b>:3巡がすべて終わった後、全員(裏切り者も)が最終の持ち銭表を見ながら、誰か1人を告発するか「告発しない」かを秘密裏に選ぶ。</li>
+    <li>告発が<b>的中</b>:その裏切り者は−3銭(倍率をかける前)。<b>外れ</b>:告発者が−2銭。告発は重複して命中する。</li>
     <li><b>勝敗</b>:裏切り陣営の合計 × 倍率 が、市民全員の合計を<b>超えたら</b>裏切り者の勝ち。同点以下なら市民の勝ち。</li>
     <li>裏切り者が勝った場合、<b>持ち銭最下位の市民</b>も敗者となる。</li>
     <li><b>御法度・一</b>:自分の役、渡した相手・額、告発する(した)相手を口に出すのは禁止。<b>嘘の申告も禁止</b>。</li>
     <li><b>御法度・二</b>:談合の禁止。「○○を告発しよう」「○○に銭を集めよう」など、行動を示し合わせる相談・指示・合図は一切禁止。</li>
     <li>口にしてよいのは、公開された受取表への感想・推理まで。「桜、受け取りすぎでは?」はよい。「だから皆で桜を告発しよう」は御法度。</li>
-    <li>推奨構成:4〜5人 → 裏切り者1人・×3/6人 → 2人・×1.5/7〜8人 → 2人・×2。倍率を上げるほど裏切り者有利。設定で自由に変更できる。</li>
-    <li><b>みんなでモード</b>:座る順にスマホを回す。第1巡は役札を見てそのまま手番。自分の番以外は画面を見ないこと。開帳(受取表)と決算は全員で見てよい。</li>
+    <li>推奨構成:4〜5人 → 裏切り者1人・×4/6人 → 2人・×2/7人 → 2人・×3/8人 → 2人・×4。倍率を上げるほど裏切り者有利。設定で自由に変更できる。</li>
+    <li><b>みんなでモード</b>:座る順にスマホを回す。第1巡は役札を見てそのまま手番。告発の刻も同じ順で回して全員が秘密裏に選ぶ。自分の番以外は画面を見ないこと。開帳(受取表)と決算は全員で見てよい。</li>
   </ul>
   <button class="btn" id="btnCloseModal" style="margin-top:12px;">閉じる</button>
 </div></div>
@@ -414,9 +410,10 @@ let actSel={mode:"give",amt:null,tgt:null};   // 現在の手番の選択
 let actor=null;                                // 現在の手番プレイヤー
 
 function recommend(n){
-  if(n<=5)return{traitors:1,mult:3};
-  if(n===6)return{traitors:2,mult:1.5};  // 6人卓は贈与の漏洩が大きく裏切り者有利のため低倍率
-  return{traitors:2,mult:2};
+  if(n<=5)return{traitors:1,mult:4};
+  if(n===6)return{traitors:2,mult:2};
+  if(n===7)return{traitors:2,mult:3};
+  return{traitors:2,mult:4};
 }
 
 /* ================= 画面遷移 ================= */
@@ -502,7 +499,7 @@ function newGame(customNames){
   const humanIdx=sel.mode==="ai"?rnd(n):-1;
   const aiNames=shuffle([...PLANTS]).slice(0,n);
   G={
-    mode:sel.mode, n, cfg, round:1, humanIdx,
+    mode:sel.mode, n, cfg, round:1, humanIdx, phase:"round",
     players:[], accusations:[], actLog:[[],[],[]],
     ptr:0, pendGives:[], pendAccs:[],
   };
@@ -539,7 +536,11 @@ function citizensOf(){return G.players.filter(p=>p.role==="citizen");}
 function showPass(){
   const p=G.players[G.ptr];
   $("passWho").innerHTML=`<span class="mon">${p.plant}</span>${p.name}`;
-  if(G.round===1){
+  if(G.phase==="accuse"){
+    $("passNote").textContent="告発の刻。全員の持ち銭を見て、誰かを告発するか決める。他の面子は画面を見ないこと。";
+    $("btnIAm").textContent=`${p.name}だ。決める`;
+    $("btnIAm").onclick=()=>{startAccuseUI(p);};
+  }else if(G.round===1){
     $("passNote").textContent="第1巡:役札を確かめて、そのまま手番を打つ。他の面子は画面を見ないこと。";
     $("btnIAm").textContent=`${p.name}だ。役を見る`;
     $("btnIAm").onclick=()=>{buildRoleCard(p,true);show("scr-role");};
@@ -579,8 +580,8 @@ function buildRoleCard(p,isLocal){
 }
 
 /* ================= 盤面描画 ================= */
-function drawBoard(){
-  const done=G.round-1;
+function drawBoard(doneOpt){
+  const done=doneOpt!==undefined?doneOpt:G.round-1;
   const t=$("boardTbl");
   let h=`<tr><th style="text-align:left;">面子</th><th>一巡</th><th>二巡</th><th>三巡</th><th>持ち銭</th></tr>`;
   G.players.forEach(p=>{
@@ -596,9 +597,10 @@ function drawBoard(){
   t.innerHTML=h;
 }
 
-function drawMyLog(p){
+function drawMyLog(p,doneOpt){
+  const done=doneOpt!==undefined?doneOpt:G.round-1;
   const lines=[];
-  for(let r=0;r<G.round-1;r++){
+  for(let r=0;r<done;r++){
     const a=G.actLog[r][p.id];
     if(!a||a.type==="pass")lines.push(`第${r+1}巡:渡さなかった`);
     else if(a.type==="give"){
@@ -618,14 +620,10 @@ function drawMyLog(p){
 function startTurnUI(p){
   actor=p;
   actSel={mode:"give",amt:null,tgt:null};
-  const isFinal=G.round===3;
-  $("hudRound").textContent=G.round;
+  $("hudPhase").innerHTML=`第${G.round}巡<span style="font-size:14px;color:#cfe4d3;"> / 3</span>`;
   $("hudMe").innerHTML=`${G.mode==="local"?`<b>${p.name}</b> `:""}`+
     (p.role==="citizen"?`<span class="tag gld">市民</span>`:`<span class="tag shu">裏切り者</span>`);
   drawBoard();drawMyLog(p);
-
-  $("modeRow").style.display=(isFinal&&p.role==="citizen")?"flex":"none";
-  setMode("give");
 
   if(p.role==="traitor"){
     const row=$("amtRow");row.style.display="flex";row.innerHTML="";
@@ -645,14 +643,18 @@ function startTurnUI(p){
   show("scr-play");
 }
 
-function setMode(m){
-  actSel.mode=m;actSel.tgt=null;
-  $("modeGive").classList.toggle("sel",m==="give");
-  $("modeAccuse").classList.toggle("sel",m==="accuse");
-  buildTargets();refreshAct();
+function startAccuseUI(p){
+  actor=p;
+  actSel={mode:"accuse",amt:null,tgt:null};
+  $("hudPhase").innerHTML=`告 発`;
+  $("hudMe").innerHTML=`${G.mode==="local"?`<b>${p.name}</b> `:""}`+
+    (p.role==="citizen"?`<span class="tag gld">市民</span>`:`<span class="tag shu">裏切り者</span>`);
+  drawBoard(3);drawMyLog(p,3);
+  $("amtRow").style.display="none";
+  buildTargets();
+  refreshAct();
+  show("scr-play");
 }
-$("modeGive").onclick=()=>setMode("give");
-$("modeAccuse").onclick=()=>setMode("accuse");
 
 function buildTargets(){
   const grid=$("tgtGrid");grid.innerHTML="";
@@ -665,18 +667,26 @@ function buildTargets(){
     b.dataset.pid=p.id;
     grid.appendChild(b);
   });
+  if(actSel.mode==="accuse"){
+    const b=document.createElement("button");
+    b.className="tgt";
+    b.style.gridColumn="1 / -1";
+    b.innerHTML=`<span class="nm">告発しない(様子を見る)</span>`;
+    b.onclick=()=>{actSel.tgt=-1;refreshAct();};
+    b.dataset.pid=-1;
+    grid.appendChild(b);
+  }
 }
 
 function refreshAct(){
   const p=actor;
-  const isFinal=G.round===3;
   document.querySelectorAll(".amt").forEach(b=>b.classList.toggle("sel",Number(b.dataset.a)===actSel.amt));
   document.querySelectorAll(".tgt").forEach(b=>b.classList.toggle("sel",Number(b.dataset.pid)===actSel.tgt));
 
   let title,help,ready=false;
   if(actSel.mode==="accuse"){
-    title="告発する相手を選ぶ";
-    help="的中なら相手は−3銭(倍率前)。外せば自分が−1銭。告発した巡は銭を渡せない。";
+    title="【告発】全員の持ち銭を見て決める";
+    help="的中なら相手は<b>−3銭</b>(倍率前)。外せば自分が<b>−2銭</b>。告発しないのも立派な選択。";
     ready=actSel.tgt!==null;
   }else if(p.role==="citizen"){
     title="1銭を渡す相手を選ぶ";
@@ -694,18 +704,25 @@ function refreshAct(){
       else b.disabled=false;
     });
   }
-  $("actTitle").innerHTML=(isFinal?"【最終巡】 ":"")+title;
+  $("actTitle").innerHTML=(actSel.mode!=="accuse"&&G.round===3?"【最後の巡】 ":"")+title;
   $("actHelp").innerHTML=help;
   $("btnCommit").disabled=!ready;
 }
 
 $("btnCommit").onclick=()=>{
   const p=actor;
-  let give=null,acc=null,log=null;
   if(actSel.mode==="accuse"){
-    acc={from:p.id,to:actSel.tgt};
-    log={type:"accuse",to:actSel.tgt};
-  }else if(p.role==="citizen"){
+    if(actSel.tgt>=0)G.pendAccs.push({from:p.id,to:actSel.tgt});
+    if(G.mode==="ai"){aiDoAccusations();finishAccuse();}
+    else{
+      G.ptr++;
+      if(G.ptr<G.n)showPass();
+      else finishAccuse();
+    }
+    return;
+  }
+  let give=null,log=null;
+  if(p.role==="citizen"){
     const pts=actSel.tgt===p.id?1:2;
     give={from:p.id,to:actSel.tgt,pts};
     log={type:"give",to:actSel.tgt,pts};
@@ -719,13 +736,12 @@ $("btnCommit").onclick=()=>{
   p.lastGive=give;
 
   if(G.mode==="ai"){
-    resolveAiRound(give,acc);
+    resolveAiRound(give);
   }else{
     if(give)G.pendGives.push(give);
-    if(acc)G.pendAccs.push(acc);
     G.ptr++;
     if(G.ptr<G.n)showPass();
-    else resolveWith(G.pendGives,G.pendAccs);
+    else resolveWith(G.pendGives);
   }
 };
 
@@ -740,11 +756,11 @@ function aiCitizenGive(ai){
   const pick=trusted[rnd(Math.min(trusted.length,2))].q;
   return{from:ai.id,to:pick.id,pts:2};
 }
-function aiCitizenFinal(ai){
+function aiCitizenAccuse(ai){
   let top=null,val=-1;
   G.players.forEach(p=>{if(p.id!==ai.id){const v=evalSus(ai,p);if(v>val){val=v;top=p.id;}}});
-  if(val>=ai.brave&&Math.random()<0.85)return{accuse:top};
-  return aiCitizenGive(ai);
+  if(val>=ai.brave&&Math.random()<0.85)return top;
+  return null;
 }
 function aiTraitorGive(ai){
   // 相方が誰かは知らない前提。他人に渡すと市民を富ませるか、相方なら消滅する
@@ -777,30 +793,22 @@ function aiUpdateSuspicion(ai,recvArr){
 }
 
 /* ================= 巡の解決 ================= */
-function resolveAiRound(humanGive,humanAcc){
-  const gives=[],accs=[];
+function resolveAiRound(humanGive){
+  const gives=[];
   if(humanGive)gives.push(humanGive);
-  if(humanAcc)accs.push(humanAcc);
-  const isFinal=G.round===3;
   G.players.forEach(p=>{
     if(p.isHuman)return;
-    let give=null,acc=null;
-    if(p.role==="citizen"){
-      if(isFinal){
-        const act=aiCitizenFinal(p);
-        if(act.accuse!==undefined)acc={from:p.id,to:act.accuse};
-        else give=act;
-      }else give=aiCitizenGive(p);
-    }else give=aiTraitorGive(p);
+    let give=null;
+    if(p.role==="citizen")give=aiCitizenGive(p);
+    else give=aiTraitorGive(p);
     if(give){gives.push(give);G.actLog[G.round-1][p.id]={type:"give",to:give.to,pts:give.pts};}
-    else if(acc){accs.push(acc);G.actLog[G.round-1][p.id]={type:"accuse",to:acc.to};}
     else G.actLog[G.round-1][p.id]={type:"pass"};
     p.lastGive=give;
   });
-  resolveWith(gives,accs);
+  resolveWith(gives);
 }
 
-function resolveWith(gives,accs){
+function resolveWith(gives){
   const recv=Array(G.n).fill(0);
   gives.forEach(g=>{
     // 裏切り者が「別の」裏切り者に渡した銭は消える(自分向けは有効)
@@ -808,9 +816,29 @@ function resolveWith(gives,accs){
     recv[g.to]+=g.pts;
   });
   G.players.forEach(p=>{p.recv[G.round-1]=recv[p.id];p.score+=recv[p.id];});
-  if(G.round===3)G.accusations=accs;
   if(G.mode==="ai")G.players.forEach(p=>{if(!p.isHuman&&p.role==="citizen")aiUpdateSuspicion(p,recv);});
   showRoundResult(recv);
+}
+
+/* ================= 告発フェーズ ================= */
+function startAccusePhase(){
+  G.phase="accuse";G.pendAccs=[];
+  if(G.mode==="ai")startAccuseUI(G.players[G.humanIdx]);
+  else{G.ptr=0;showPass();}
+}
+function aiDoAccusations(){
+  G.players.forEach(p=>{
+    if(p.isHuman)return;
+    if(p.role==="citizen"){
+      const t=aiCitizenAccuse(p);
+      if(t!==null)G.pendAccs.push({from:p.id,to:t});
+    }
+    // 裏切り者AIは告発しない(的中は味方を削り、外れは自分が−2)
+  });
+}
+function finishAccuse(){
+  G.accusations=G.pendAccs;
+  finishGame();
 }
 
 function showRoundResult(recv){
@@ -827,14 +855,14 @@ function showRoundResult(recv){
   h+=`<div class="circnote">この巡に出回った銭:${total}銭(誰が渡したかは秘密)</div>`;
   $("rrList").innerHTML=h;
   $("rrPublicNote").textContent=G.mode==="local"?"この画面は全員で見てよい。感想・推理は自由、談合は御法度。":"";
-  $("btnNext").textContent=G.round===3?"勘定へ":"次の巡へ";
+  $("btnNext").textContent=G.round===3?"告発の刻へ":"次の巡へ";
   show("scr-round");
 }
 $("btnNext").onclick=()=>{
-  if(G.round===3){finishGame();return;}
+  if(G.round===3){startAccusePhase();return;}
   G.round++;
   if(G.mode==="ai")startTurnUI(G.players[G.humanIdx]);
-  else{G.ptr=0;G.pendGives=[];G.pendAccs=[];showPass();}
+  else{G.ptr=0;G.pendGives=[];showPass();}
 };
 
 /* ================= 決算 ================= */
@@ -843,7 +871,7 @@ function finishGame(){
   G.accusations.forEach(a=>{
     const from=G.players[a.from],to=G.players[a.to];
     if(to.role==="traitor"){to.score-=3;accResults.push({a,hit:true});}
-    else{from.score-=1;accResults.push({a,hit:false});}
+    else{from.score-=2;accResults.push({a,hit:false});}
   });
 
   const cits=citizensOf(),trs=traitorsOf();
@@ -893,7 +921,7 @@ function finishGame(){
     $("endAcc").innerHTML=accResults.map(r=>{
       const f=G.players[r.a.from],t=G.players[r.a.to];
       return `<div class="acc-line">${dispName(f)} → ${dispName(t)}:
-        ${r.hit?'<span class="hit">的中!(−3銭)</span>':'<span class="miss">はずれ(告発者−1銭)</span>'}</div>`;
+        ${r.hit?'<span class="hit">的中!(−3銭)</span>':'<span class="miss">はずれ(告発者−2銭)</span>'}</div>`;
     }).join("");
   }else{
     $("endAcc").innerHTML=`<div class="acc-line miss">告発は行われなかった…</div>`;
